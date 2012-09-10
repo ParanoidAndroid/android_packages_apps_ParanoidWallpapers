@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.paranoid.PAWallpapers;
+package com.paranoid.ParanoidWallpapers;
 
 import android.app.Activity;
 import android.app.WallpaperManager;
