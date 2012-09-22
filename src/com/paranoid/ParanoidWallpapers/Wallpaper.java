@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2012 ParanoidAndroid Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,235 +16,223 @@
 
 package com.paranoid.ParanoidWallpapers;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.Gallery;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
+@SuppressLint("ParserError")
+public class Wallpaper extends FragmentActivity {
 
-public class Wallpaper extends Activity implements AdapterView.OnItemSelectedListener,
-        OnClickListener {
+    /**
+     * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
+     * sections. We use a {@link android.support.v4.app.FragmentPagerAdapter} derivative, which will
+     * keep every loaded fragment in memory. If this becomes too memory intensive, it may be best
+     * to switch to a {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     */
+    SectionsPagerAdapter mSectionsPagerAdapter;
 
-    private Gallery mGallery;
-    private ImageView mImageView;
-    private TextView mInfoView;
-    private boolean mIsWallpaperSet;
+    /**
+     * The {@link ViewPager} that will host the section contents.
+     */
+    ViewPager mViewPager;
+    
+    /**
+     * Menu item used for "Apply" button on actionbar
+     */
+    private static final int MENU_APPLY = Menu.FIRST;
+    
+    /**
+     * The {@link Integer} that stores current fragment selected
+     */
+    private int mCurrentFragment;
+    
+    /**
+     * The {@link ArrayList} that will host the wallpapers resource ID's
+     */
+    static ArrayList <Integer> sWallpapers = new ArrayList<Integer>();
+    
+    /**
+     * The {@link String[]} that will store wallpaper name
+     */
+    String[] mWallpaperInfo;
+    
+    /**
+     * The {@link Context} to be used by the app
+     */
+    static Context mContext;
 
-    private Bitmap mBitmap;
-
-    private ArrayList<Integer> mThumbs;
-    private ArrayList<Integer> mImages;
-    private WallpaperLoader mLoader;
-
+    
     @Override
-    public void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        // Create the adapter that will return a fragment for each of the three primary sections
+        // of the app.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        findWallpapers();
-
-        setContentView(R.layout.wallpaper_chooser);
-
-        mGallery = (Gallery) findViewById(R.id.gallery);
-        mGallery.setAdapter(new ImageAdapter(this));
-        mGallery.setOnItemSelectedListener(this);
-        mGallery.setCallbackDuringFling(false);
-
-        findViewById(R.id.set).setOnClickListener(this);
-
-        mImageView = (ImageView) findViewById(R.id.wallpaper);
-        mInfoView = (TextView) findViewById(R.id.info);
-    }
-
-    private void findWallpapers() {
-        mThumbs = new ArrayList<Integer>(24);
-        mImages = new ArrayList<Integer>(24);
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOnPageChangeListener(new SimpleOnPageChangeListener(){
+            public void onPageSelected(int position) {
+                mCurrentFragment = position;
+            }
+        });
+        
+        sWallpapers.clear();
 
         final Resources resources = getResources();
         final String packageName = getApplication().getPackageName();
 
-        addWallpapers(resources, packageName, R.array.wallpapers);
-        addWallpapers(resources, packageName, R.array.extra_wallpapers);
+        fetchWallpapers(resources, packageName, R.array.wallpapers);
+        mWallpaperInfo = resources.getStringArray(R.array.info);
     }
 
-    private void addWallpapers(Resources resources, String packageName, int list) {
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
+     * sections of the app.
+     */
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            Fragment fragment = new WallpaperFragment();
+            Bundle args = new Bundle();
+            args.putInt(WallpaperFragment.ARG_SECTION_NUMBER, i);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return sWallpapers.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mWallpaperInfo[position];
+        }
+    }
+
+    public static class WallpaperFragment extends Fragment {
+        public static final String ARG_SECTION_NUMBER = "section_number";
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            mContext = getActivity();
+            Bundle args = getArguments();
+            LinearLayout holder = new LinearLayout(mContext);
+            holder.setLayoutParams(new LinearLayout.LayoutParams
+                    (LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            ImageView img = new ImageView(mContext);
+            img.setLayoutParams(new ViewGroup.LayoutParams
+                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            img.setBackgroundResource(sWallpapers.get(args.getInt(ARG_SECTION_NUMBER)));
+            holder.addView(img);
+            return holder;
+        }
+    }
+
+    private void fetchWallpapers(Resources resources, String packageName, int list) {
         final String[] extras = resources.getStringArray(list);
         for (String extra : extras) {
             int res = resources.getIdentifier(extra, "drawable", packageName);
             if (res != 0) {
-                final int thumbRes = resources.getIdentifier(extra + "_small",
-                        "drawable", packageName);
-
-                if (thumbRes != 0) {
-                    mThumbs.add(thumbRes);
-                    mImages.add(res);
-                }
+                sWallpapers.add(res);
             }
         }
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mIsWallpaperSet = false;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        
-        if (mLoader != null && mLoader.getStatus() != WallpaperLoader.Status.FINISHED) {
-            mLoader.cancel(true);
-            mLoader = null;
-        }
-    }
-
-    public void onItemSelected(AdapterView parent, View v, int position, long id) {
-        if (mLoader != null && mLoader.getStatus() != WallpaperLoader.Status.FINISHED) {
-            mLoader.cancel();
-        }
-        mLoader = (WallpaperLoader) new WallpaperLoader().execute(position);
-    }
-
-    /*
-     * When using touch if you tap an image it triggers both the onItemClick and
-     * the onTouchEvent causing the wallpaper to be set twice. Ensure we only
-     * set the wallpaper once.
-     */
-    private void selectWallpaper(int position) {
-        if (mIsWallpaperSet) {
-            return;
-        }
-
-        mIsWallpaperSet = true;
-        try {
-            InputStream stream = getResources().openRawResource(mImages.get(position));
-            setWallpaper(stream);
-            setResult(RESULT_OK);
-            finish();
-        } catch (IOException e) {
-            Log.e("Paperless System", "Failed to set wallpaper: " + e);
-        }
-    }
-
-    public void onNothingSelected(AdapterView parent) {
-    }
-
-    private class ImageAdapter extends BaseAdapter {
-        private LayoutInflater mLayoutInflater;
-
-        ImageAdapter(Wallpaper context) {
-            mLayoutInflater = context.getLayoutInflater();
-        }
-
-        public int getCount() {
-            return mThumbs.size();
-        }
-
-        public Object getItem(int position) {
-            return position;
-        }
-
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ImageView image;
-
-            if (convertView == null) {
-                image = (ImageView) mLayoutInflater.inflate(R.layout.wallpaper_item, parent, false);
-            } else {
-                image = (ImageView) convertView;
-            }
-            
-            int thumbRes = mThumbs.get(position);
-            image.setImageResource(thumbRes);
-            Drawable thumbDrawable = image.getDrawable();
-            if (thumbDrawable != null) {
-                thumbDrawable.setDither(true);
-            } else {
-                Log.e("Paperless System", String.format(
-                    "Error decoding thumbnail resId=%d for wallpaper #%d",
-                    thumbRes, position));
-            }
-            return image;
-        }
-    }
-
-    public void onClick(View v) {
-        selectWallpaper(mGallery.getSelectedItemPosition());
-    }
-
-    class WallpaperLoader extends AsyncTask<Integer, Void, Bitmap> {
+    
+    class WallpaperLoader extends AsyncTask<Integer, Void, Boolean> {
         BitmapFactory.Options mOptions;
+        ProgressDialog mDialog;
 
         WallpaperLoader() {
             mOptions = new BitmapFactory.Options();
             mOptions.inDither = false;
-            mOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;            
+            mOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
         }
         
-        protected Bitmap doInBackground(Integer... params) {
-            if (isCancelled()) return null;
-            try {
-                return BitmapFactory.decodeResource(getResources(),
-                        mImages.get(params[0]), mOptions);
-            } catch (OutOfMemoryError e) {
-                return null;
-            }            
-        }
-
         @Override
-        protected void onPostExecute(Bitmap b) {
-            if (b == null) return;
-
-            if (!isCancelled() && !mOptions.mCancel) {
-                // Help the GC
-                if (mBitmap != null) {
-                    mBitmap.recycle();
+        protected Boolean doInBackground(Integer... params) {
+            try {
+                Bitmap b = BitmapFactory.decodeResource(getResources(),
+                        sWallpapers.get(params[0]), mOptions);
+                
+                WallpaperManager wallpaperManager = WallpaperManager.getInstance(mContext);
+                try {
+                    wallpaperManager.setBitmap(b);
+                } catch (IOException e) {
+                    // If we crash, we will probably have a null bitmap
+                    // print it, and return before recycling
+                    throw new NullPointerException();
                 }
-
-                mInfoView.setText(getResources().getStringArray(R.array.info)[mGallery.getSelectedItemPosition()]);
-
-                final ImageView view = mImageView;
-                view.setImageBitmap(b);
-
-                mBitmap = b;
-
-                final Drawable drawable = view.getDrawable();
-                drawable.setFilterBitmap(true);
-                drawable.setDither(true);
-
-                view.postInvalidate();
-
-                mLoader = null;
-            } else {
-               b.recycle(); 
+                
+                // Help GC
+                b.recycle();
+                
+                return true;
+            } catch (OutOfMemoryError e) {
+                return false;
+            } catch(NullPointerException e){
+                return false;
             }
         }
-
-        void cancel() {
-            mOptions.requestCancelDecode();
-            super.cancel(true);
+        
+        @Override
+        protected void onPostExecute(Boolean success) {
+            mDialog.dismiss();
+            finish();
         }
+        
+        @Override
+        protected void onPreExecute() {
+            mDialog = ProgressDialog.show(mContext, null, getString(R.string.applying));
+        }
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case MENU_APPLY:
+                new WallpaperLoader().execute(mCurrentFragment);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+         menu.add(Menu.NONE, MENU_APPLY, 0, R.string.action_apply)
+                 .setIcon(android.R.drawable.ic_menu_set_as)
+                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+         return super.onCreateOptionsMenu(menu);
     }
 }

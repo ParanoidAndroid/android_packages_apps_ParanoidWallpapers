@@ -17,24 +17,24 @@
 
 <resources>
     <string-array name="wallpapers" translatable="false">
-    <item>wallpaper_1</item>
-    <item>wallpaper_2</item>
-    <item>wallpaper_3</item>
-    <item>wallpaper_4</item>
-    <item>wallpaper_5</item>
-    <item>wallpaper_6</item>
-    <item>wallpaper_7</item>
-    <item>wallpaper_8</item>
+        <item>wallpaper_1</item>
+        <item>wallpaper_2</item>
+        <item>wallpaper_3</item>
+        <item>wallpaper_4</item>
+        <item>wallpaper_5</item>
+        <item>wallpaper_6</item>
+        <item>wallpaper_7</item>
+        <item>wallpaper_8</item>
     </string-array>
 
     <string-array name="info" translatable="false">
-    <item>Nothing is Real</item>
-    <item>El Goog</item>
-    <item>City Djungle</item>
-    <item>Singing Bird</item>
-    <item>Juggling Monsters</item>
-    <item>Rocket Launcher</item>
-    <item>Pet Sematary</item>
-    <item>Fallen Cookies</item>
+        <item>Nothing is Real</item>
+        <item>El Goog</item>
+        <item>City Djungle</item>
+        <item>Singing Bird</item>
+        <item>Juggling Monsters</item>
+        <item>Rocket Launcher</item>
+        <item>Pet Sematary</item>
+        <item>Fallen Cookies</item>
     </string-array>
 </resources>

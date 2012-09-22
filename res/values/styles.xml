@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright (C) 2009 Google Inc.
+ * Copyright (C) 2012, ParanoidAndroid Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  -->
 
 <resources>
-    <string-array name="extra_wallpapers">
-    </string-array>
+
+    <style name="AppTheme" parent="android:Theme.Light" />
+
 </resources>

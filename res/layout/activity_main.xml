@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  -->
+ 
+<android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/pager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<resources>
+    <android.support.v4.view.PagerTitleStrip android:id="@+id/pager_title_strip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#33b5e5"
+        android:textColor="#fff"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
 
-    <string name="app_name">ParanoidWallpapers</string>
-    <string name="solid_color">Color sólido</string>
-    <string name="pick_color">Seleccione un color</string>
-    <string name="red">Rojo</string>
-    <string name="green">Verde</string>
-    <string name="blue">Azul</string>
-    <string name="purple">Morado</string>
-    <string name="orange">Naranja</string>
-    <string name="white">Blanco</string>
-    <string name="black">Negro</string>
-    <string name="action_apply">Aplicar</string>
-    <string name="applying">Aplicando fondo seleccionado</string>
-
-</resources>
+</android.support.v4.view.ViewPager>

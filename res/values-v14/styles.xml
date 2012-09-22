@@ -17,17 +17,6 @@
 
 <resources>
 
-    <string name="app_name">ParanoidWallpapers</string>
-    <string name="solid_color">Color sólido</string>
-    <string name="pick_color">Seleccione un color</string>
-    <string name="red">Rojo</string>
-    <string name="green">Verde</string>
-    <string name="blue">Azul</string>
-    <string name="purple">Morado</string>
-    <string name="orange">Naranja</string>
-    <string name="white">Blanco</string>
-    <string name="black">Negro</string>
-    <string name="action_apply">Aplicar</string>
-    <string name="applying">Aplicando fondo seleccionado</string>
+    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar" />
 
 </resources>
