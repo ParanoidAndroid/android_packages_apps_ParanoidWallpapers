@@ -153,8 +153,9 @@ public class Wallpaper extends FragmentActivity {
                     (LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             ImageView img = new ImageView(mContext);
             img.setLayoutParams(new ViewGroup.LayoutParams
-                    (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            img.setBackgroundResource(sWallpapers.get(args.getInt(ARG_SECTION_NUMBER)));
+                    (ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            img.setImageResource(sWallpapers.get(args.getInt(ARG_SECTION_NUMBER)));
+            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             holder.addView(img);
             return holder;
         }
@@ -191,7 +192,7 @@ public class Wallpaper extends FragmentActivity {
                     wallpaperManager.setBitmap(b);
                 } catch (IOException e) {
                     // If we crash, we will probably have a null bitmap
-                    // print it, and return before recycling
+                    // return before recycling to avoid exception
                     throw new NullPointerException();
                 }
                 
