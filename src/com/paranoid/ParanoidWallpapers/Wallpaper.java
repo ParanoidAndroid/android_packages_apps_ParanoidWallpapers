@@ -100,7 +100,7 @@ public class Wallpaper extends FragmentActivity {
                 mCurrentFragment = position;
             }
         });
-
+        
         sWallpapers.clear();
 
         final Resources resources = getResources();
@@ -108,8 +108,6 @@ public class Wallpaper extends FragmentActivity {
 
         fetchWallpapers(resources, packageName, R.array.wallpapers);
         mWallpaperInfo = resources.getStringArray(R.array.info);
-
-        mViewPager.setOffscreenPageLimit(sWallpapers.size());
     }
 
     /**
