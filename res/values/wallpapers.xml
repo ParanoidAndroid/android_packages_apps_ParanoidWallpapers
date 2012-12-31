@@ -9,6 +9,7 @@
 
 <resources>
     <string-array name="wallpapers" translatable="false">
+        <item>wallpaper_0</item>
         <item>wallpaper_1</item>
         <item>wallpaper_2</item>
         <item>wallpaper_3</item>
@@ -20,6 +21,7 @@
     </string-array>
 
     <string-array name="info" translatable="false">
+        <item>Red Girl</item>
         <item>Nothing is Real</item>
         <item>El Goog</item>
         <item>City Djungle</item>
