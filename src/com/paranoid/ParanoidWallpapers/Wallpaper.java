@@ -10,12 +10,21 @@
 package com.paranoid.ParanoidWallpapers;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.Paint;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuff.Mode;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,6 +46,11 @@ import java.util.ArrayList;
 
 @SuppressLint("ParserError")
 public class Wallpaper extends FragmentActivity {
+   
+    /**
+     * Menu item used for "Apply" button on actionbar.
+     */
+    private static final int MENU_APPLY = Menu.FIRST;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
@@ -50,31 +64,36 @@ public class Wallpaper extends FragmentActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-    
+
     /**
-     * Menu item used for "Apply" button on actionbar
+     * The {@link WallpaperManager} used to set wallpaper.
      */
-    private static final int MENU_APPLY = Menu.FIRST;
+    WallpaperManager mWallpaperManager;
     
     /**
-     * The {@link Integer} that stores current fragment selected
+     * The {@link Integer} that stores current fragment selected.
      */
-    private int mCurrentFragment;
+    int mCurrentFragment;
     
     /**
-     * The {@link ArrayList} that will host the wallpapers resource ID's
+     * The {@link ArrayList} that will host the wallpapers resource ID's.
      */
-    static ArrayList <Integer> sWallpapers = new ArrayList<Integer>();
+    ArrayList <Integer> mWallpapers = new ArrayList<Integer>();
     
     /**
-     * The {@link String[]} that will store wallpaper name
+     * The {@link String[]} that will store wallpaper name.
      */
     String[] mWallpaperInfo;
     
     /**
-     * The {@link Context} to be used by the app
+     * The {@link Context} to be used by the app.
      */
-    static Context mContext;
+    Context mContext;
+
+    /**
+     * The {@link Boolean} that stores if current item is customizable.
+     */
+    boolean mCustomizable = true;
 
     
     @Override
@@ -85,22 +104,29 @@ public class Wallpaper extends FragmentActivity {
         // of the app.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+        mContext = this;
+
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setOnPageChangeListener(new SimpleOnPageChangeListener(){
             public void onPageSelected(int position) {
                 mCurrentFragment = position;
+
+                // Check if item is customizable
+                mCustomizable = (mCurrentFragment == 0);
+                Wallpaper.this.invalidateOptionsMenu();
             }
         });
         
-        sWallpapers.clear();
+        mWallpapers.clear();
 
         final Resources resources = getResources();
-        final String packageName = getApplication().getPackageName();
+        final String packageName = getPackageName();
 
         fetchWallpapers(resources, packageName, R.array.wallpapers);
         mWallpaperInfo = resources.getStringArray(R.array.info);
+        mWallpaperManager = WallpaperManager.getInstance(mContext);
     }
 
     /**
@@ -108,6 +134,8 @@ public class Wallpaper extends FragmentActivity {
      * sections of the app.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        private WallpaperFragment mCurrent;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -119,12 +147,17 @@ public class Wallpaper extends FragmentActivity {
             Bundle args = new Bundle();
             args.putInt(WallpaperFragment.ARG_SECTION_NUMBER, i);
             fragment.setArguments(args);
+            mCurrent = (WallpaperFragment) fragment;
             return fragment;
+        }
+
+        public WallpaperFragment getCurrentFragment() {
+            return mCurrent;
         }
 
         @Override
         public int getCount() {
-            return sWallpapers.size();
+            return mWallpapers.size();
         }
 
         @Override
@@ -133,23 +166,22 @@ public class Wallpaper extends FragmentActivity {
         }
     }
 
-    public static class WallpaperFragment extends Fragment {
+    public class WallpaperFragment extends Fragment {
         public static final String ARG_SECTION_NUMBER = "section_number";
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            mContext = getActivity();
             Bundle args = getArguments();
             LinearLayout holder = new LinearLayout(mContext);
             holder.setLayoutParams(new LinearLayout.LayoutParams
                     (LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-            ImageView img = new ImageView(mContext);
-            img.setLayoutParams(new ViewGroup.LayoutParams
+            ImageView imageView = new ImageView(mContext);
+            imageView.setLayoutParams(new ViewGroup.LayoutParams
                     (ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            img.setImageResource(sWallpapers.get(args.getInt(ARG_SECTION_NUMBER)));
-            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            holder.addView(img);
+            imageView.setImageResource(mWallpapers.get(args.getInt(ARG_SECTION_NUMBER)));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            holder.addView(imageView);
             return holder;
         }
     }
@@ -159,30 +191,25 @@ public class Wallpaper extends FragmentActivity {
         for (String extra : extras) {
             int res = resources.getIdentifier(extra, "drawable", packageName);
             if (res != 0) {
-                sWallpapers.add(res);
+                mWallpapers.add(res);
             }
         }
     }
     
-    class WallpaperLoader extends AsyncTask<Integer, Void, Boolean> {
-        BitmapFactory.Options mOptions;
+    private class WallpaperLoader extends AsyncTask<Integer, Void, Boolean> {
         ProgressDialog mDialog;
+        Bitmap mBitmap;
 
-        WallpaperLoader() {
-            mOptions = new BitmapFactory.Options();
-            mOptions.inDither = false;
-            mOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        public void setBitmap(Bitmap bitmap) {
+            mBitmap = bitmap;
         }
         
         @Override
         protected Boolean doInBackground(Integer... params) {
             try {
-                Bitmap b = BitmapFactory.decodeResource(getResources(),
-                        sWallpapers.get(params[0]), mOptions);
-                
-                WallpaperManager wallpaperManager = WallpaperManager.getInstance(mContext);
+
                 try {
-                    wallpaperManager.setBitmap(b);
+                    mWallpaperManager.setBitmap(mBitmap);
                 } catch (IOException e) {
                     // If we crash, we will probably have a null bitmap
                     // return before recycling to avoid exception
@@ -190,7 +217,7 @@ public class Wallpaper extends FragmentActivity {
                 }
                 
                 // Help GC
-                b.recycle();
+                mBitmap.recycle();
                 
                 return true;
             } catch (OutOfMemoryError e) {
@@ -211,17 +238,83 @@ public class Wallpaper extends FragmentActivity {
             mDialog = ProgressDialog.show(mContext, null, getString(R.string.applying));
         }
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        final WallpaperLoader loader = new WallpaperLoader();
         switch (item.getItemId()) {
             case MENU_APPLY:
-                new WallpaperLoader().execute(mCurrentFragment);
+                if(mCustomizable) {
+                    final CharSequence[] items = getResources()
+                            .getStringArray(R.array.customize_colors);
+                    int resId = mWallpapers.get(mCurrentFragment);
+                    Drawable d = mContext.getResources()
+                            .getDrawable(resId);
+                    final Bitmap stockBitmap = ((BitmapDrawable)d)
+                            .getBitmap();
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle(getString(R.string.pick_color));
+                    builder.setItems(items, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int item) {
+                            int color = Color.BLACK;
+                            boolean setColor = true;
+                            switch(item){
+                                case 0:
+                                    color = Color.RED;
+                                    break;
+                                case 1:
+                                    color = Color.GREEN;
+                                    break;
+                                case 2:
+                                    color = Color.BLUE;
+                                    break;
+                                case 3:
+                                    setColor = false;
+                                    break;
+                            }
+                            
+                            loader.setBitmap(setColor ?
+                                    getColoredBitmap(stockBitmap, color) :
+                                    stockBitmap);
+                            loader.execute();
+                        }
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.setCancelable(false);
+                    alert.show();
+                } else {
+                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
+                            mWallpapers.get(mCurrentFragment));
+                    loader.setBitmap(bitmap);
+                    loader.execute();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
-    
+
+    private Bitmap getColoredBitmap(Bitmap src, int color){
+        int width = src.getWidth();
+        int height = src.getHeight();
+
+        Bitmap dest = Bitmap.createBitmap(width, height,
+                Bitmap.Config.RGB_565);
+         
+        Canvas canvas = new Canvas(dest);
+        Paint paint = new Paint();
+        paint.setColorFilter(new PorterDuffColorFilter(color, Mode.OVERLAY)); 
+        canvas.drawBitmap(src, 0, 0, paint);
+         
+        return dest;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
          menu.add(Menu.NONE, MENU_APPLY, 0, R.string.action_apply)

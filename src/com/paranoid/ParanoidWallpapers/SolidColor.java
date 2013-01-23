@@ -26,10 +26,10 @@ public class SolidColor extends Activity {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        final CharSequence[] items = getResources().getStringArray(R.array.colors);
-        final Context mContext = this;
+        final CharSequence[] items = getResources().getStringArray(R.array.solid_colors);
+        final Context context = this;
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(getString(R.string.pick_color));
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
@@ -57,7 +57,7 @@ public class SolidColor extends Activity {
                 }
                 
                 try {
-                    WallpaperManager wm = WallpaperManager.getInstance(mContext);
+                    WallpaperManager wm = WallpaperManager.getInstance(context);
                     
                     // Create 1x1 bitmap to store the color
                     Bitmap bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
@@ -74,11 +74,12 @@ public class SolidColor extends Activity {
                 } catch (IOException e) {
                     // oh lord!
                 }
-                
+
                 finish();
             }
         });
         AlertDialog alert = builder.create();
+        alert.setCancelable(false);
         alert.show();
     }
 }
