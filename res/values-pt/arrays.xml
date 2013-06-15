@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2012 ParanoidAndroid Project
+
+     Licensed under the GNU GPLv2 license
+
+     The text of the license can be found in the LICENSE file
+     or at https://www.gnu.org/licenses/gpl-2.0.txt
+-->
+
+<resources>
+
+    <string-array name="solid_colors">
+        <item>@string/red</item>
+        <item>@string/green</item>
+        <item>@string/blue</item>
+        <item>@string/purple</item>
+        <item>@string/orange</item>
+        <item>@string/white</item>
+        <item>@string/black</item>
+    </string-array>
+
+    <string-array name="customize_colors">
+        <item>@string/red</item>
+        <item>@string/green</item>
+        <item>@string/blue</item>
+        <item>@string/white</item>
+    </string-array>
+
+</resources>
