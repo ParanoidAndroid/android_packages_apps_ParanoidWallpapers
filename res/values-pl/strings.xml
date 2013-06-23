@@ -9,7 +9,7 @@
 
 <resources>
 
-    <string name="app_name">Tapety Paranoid</string>
+    <string name="app_name">ParanoidWallpapers</string>
     <string name="solid_color">Solid color</string>
     <string name="pick_color">Wybierz kolor</string>
     <string name="red">Czerwony</string>
