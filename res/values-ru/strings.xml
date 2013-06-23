@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2012 ParanoidAndroid Project
+
+     Licensed under the GNU GPLv2 license
+
+     The text of the license can be found in the LICENSE file
+     or at https://www.gnu.org/licenses/gpl-2.0.txt
+-->
+
+<resources>
+
+    <string name="app_name">ParanoidWallpapers</string>
+    <string name="solid_color">Сплошной тон</string>
+    <string name="pick_color">Выбрать цвет</string>
+    <string name="red">Красный</string>
+    <string name="green">Зелёный</string>
+    <string name="blue">Синий</string>
+    <string name="purple">Фиолетовый</string>
+    <string name="orange">Оранжевый</string>
+    <string name="white">Белый</string>
+    <string name="black">Чёрный</string>
+    <string name="action_apply">Применить</string>
+    <string name="applying">Идет загрузка</string>
+
+</resources>
