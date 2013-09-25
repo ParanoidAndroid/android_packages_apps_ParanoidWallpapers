@@ -9,7 +9,7 @@
 
 <resources>
 
-    <string name="app_name">Обои Paranoid</string>
+    <string name="app_name">ParanoidWallpapers</string>
     <string name="solid_color">Сплошной тон</string>
     <string name="pick_color">Выбрать цвет</string>
     <string name="red">Красный</string>
